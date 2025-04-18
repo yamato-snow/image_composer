@@ -11,6 +11,9 @@ def TemplateView(page):
     current_template = None
     current_template_path = None
     
+    # ロード中表示用プログレスバー
+    loading = ft.ProgressBar(width=100, visible=False)
+    
     # テンプレート一覧
     template_list = ft.ListView(
         expand=1,
@@ -205,9 +208,6 @@ def TemplateView(page):
         scroll=ft.ScrollMode.AUTO,
         expand=True
     )
-    
-    # 読込中インジケータ
-    loading = ft.ProgressRing(width=16, height=16, visible=False)
     
     def load_template_list():
         """テンプレート一覧を読み込み"""
