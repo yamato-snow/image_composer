@@ -11,6 +11,14 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 def abs_path(rel_path):
     return os.path.join(script_dir, rel_path)
 
+# パッチを適用
+try:
+    from json_patch import apply_patch
+    apply_patch()
+except Exception as e:
+    print(f"パッチの適用に失敗しました: {e}")
+    traceback.print_exc()
+
 from ui.main_view import MainView
 from image_processor import ImageProcessor
 from template_manager import TemplateManager
