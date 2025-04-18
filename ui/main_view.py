@@ -18,8 +18,8 @@ def MainView(page):
                         ft.AppBar(
                             title=ft.Text("画像合成自動化ツール"),
                             center_title=True,
-                            bgcolor=ft.colors.BLUE_600,
-                            color=ft.colors.WHITE
+                            bgcolor=ft.Colors.BLUE_600,
+                            color=ft.Colors.WHITE
                         ),
                         ft.Container(
                             content=ft.Column(
@@ -31,7 +31,7 @@ def MainView(page):
                                     ft.Container(
                                         content=ft.ElevatedButton(
                                             text="テンプレート管理",
-                                            icon=ft.icons.PALETTE,
+                                            icon=ft.Icons.PALETTE,
                                             on_click=lambda _: page.go("/template"),
                                             style=ft.ButtonStyle(
                                                 shape=ft.RoundedRectangleBorder(radius=10), 
@@ -47,7 +47,7 @@ def MainView(page):
                                     ft.Container(
                                         content=ft.ElevatedButton(
                                             text="バッチ処理実行",
-                                            icon=ft.icons.PLAY_ARROW,
+                                            icon=ft.Icons.PLAY_ARROW,
                                             on_click=lambda _: page.go("/batch"),
                                             style=ft.ButtonStyle(
                                                 shape=ft.RoundedRectangleBorder(radius=10), 
@@ -62,7 +62,7 @@ def MainView(page):
                                     
                                     ft.Container(
                                         content=ft.Row(
-                                            [ft.Text("© 2025 画像合成自動化ツール", size=12, color=ft.colors.GREY)],
+                                            [ft.Text("© 2025 画像合成自動化ツール", size=12, color=ft.Colors.GREY)],
                                             alignment=ft.MainAxisAlignment.END
                                         ),
                                         alignment=ft.alignment.bottom_right,
@@ -89,10 +89,10 @@ def MainView(page):
                         ft.AppBar(
                             title=ft.Text("テンプレート管理"),
                             center_title=True,
-                            bgcolor=ft.colors.BLUE_600,
-                            color=ft.colors.WHITE,
+                            bgcolor=ft.Colors.BLUE_600,
+                            color=ft.Colors.WHITE,
                             actions=[
-                                ft.IconButton(icon=ft.icons.HOME, on_click=lambda _: page.go("/"))
+                                ft.IconButton(icon=ft.Icons.HOME, on_click=lambda _: page.go("/"))
                             ]
                         ),
                         TemplateView(page)
@@ -109,10 +109,10 @@ def MainView(page):
                         ft.AppBar(
                             title=ft.Text("バッチ処理実行"),
                             center_title=True,
-                            bgcolor=ft.colors.BLUE_600,
-                            color=ft.colors.WHITE,
+                            bgcolor=ft.Colors.BLUE_600,
+                            color=ft.Colors.WHITE,
                             actions=[
-                                ft.IconButton(icon=ft.icons.HOME, on_click=lambda _: page.go("/"))
+                                ft.IconButton(icon=ft.Icons.HOME, on_click=lambda _: page.go("/"))
                             ]
                         ),
                         BatchView(page)

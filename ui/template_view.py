@@ -95,7 +95,7 @@ def TemplateView(page):
                     bg_path,
                     ft.ElevatedButton(
                         "参照",
-                        icon=ft.icons.FOLDER_OPEN,
+                        icon=ft.Icons.FOLDER_OPEN,
                         on_click=lambda _: pick_background_file()
                     )
                 ],
@@ -130,7 +130,7 @@ def TemplateView(page):
                                 ft.Text("テキスト要素", size=16, weight=ft.FontWeight.BOLD),
                                 ft.ElevatedButton(
                                     "追加",
-                                    icon=ft.icons.ADD,
+                                    icon=ft.Icons.ADD,
                                     on_click=lambda _: add_text_element()
                                 )
                             ],
@@ -141,12 +141,12 @@ def TemplateView(page):
                             [
                                 ft.OutlinedButton(
                                     "編集",
-                                    icon=ft.icons.EDIT,
+                                    icon=ft.Icons.EDIT,
                                     on_click=lambda _: edit_text_element()
                                 ),
                                 ft.OutlinedButton(
                                     "削除",
-                                    icon=ft.icons.DELETE,
+                                    icon=ft.Icons.DELETE,
                                     on_click=lambda _: remove_text_element()
                                 )
                             ],
@@ -165,7 +165,7 @@ def TemplateView(page):
                                 ft.Text("装飾要素", size=16, weight=ft.FontWeight.BOLD),
                                 ft.ElevatedButton(
                                     "追加",
-                                    icon=ft.icons.ADD,
+                                    icon=ft.Icons.ADD,
                                     on_click=lambda _: add_image_element()
                                 )
                             ],
@@ -176,12 +176,12 @@ def TemplateView(page):
                             [
                                 ft.OutlinedButton(
                                     "編集",
-                                    icon=ft.icons.EDIT,
+                                    icon=ft.Icons.EDIT,
                                     on_click=lambda _: edit_image_element()
                                 ),
                                 ft.OutlinedButton(
                                     "削除",
-                                    icon=ft.icons.DELETE,
+                                    icon=ft.Icons.DELETE,
                                     on_click=lambda _: remove_image_element()
                                 )
                             ],
@@ -197,7 +197,7 @@ def TemplateView(page):
                     [
                         ft.ElevatedButton(
                             "保存",
-                            icon=ft.icons.SAVE,
+                            icon=ft.Icons.SAVE,
                             on_click=lambda _: save_template()
                         )
                     ],
@@ -215,19 +215,18 @@ def TemplateView(page):
         templates = template_manager.get_template_list()
         
         for template_info in templates:
-            template_list.controls.append(
-                ft.Container(
-                    content=ft.ListTile(
-                        title=ft.Text(template_info["name"]),
-                        subtitle=ft.Text(template_info["path"], size=10),
-                        leading=ft.Icon(ft.icons.DESCRIPTION),
-                        on_click=lambda _, info=template_info: select_template(info)
-                    ),
-                    border=ft.border.all(1, ft.colors.BLACK12),
-                    border_radius=5,
-                    padding=5
-                )
+            template_item = ft.Container(
+                content=ft.ListTile(
+                    title=ft.Text(template_info["name"]),
+                    subtitle=ft.Text(os.path.basename(template_info["path"]), size=10),
+                    leading=ft.Icon(ft.Icons.DESCRIPTION),
+                    on_click=lambda _, info=template_info: select_template(info)
+                ),
+                border=ft.border.all(1, ft.Colors.BLACK12),
+                border_radius=5,
+                padding=5
             )
+            template_list.controls.append(template_item)
         
         page.update()
     
@@ -284,11 +283,11 @@ def TemplateView(page):
                     content=ft.ListTile(
                         title=ft.Text(text),
                         subtitle=ft.Text(f"位置: {position}, サイズ: {font_size}pt", size=10),
-                        leading=ft.Icon(ft.icons.TEXT_FIELDS),
+                        leading=ft.Icon(ft.Icons.TEXT_FIELDS),
                         selected=False,
                         data=i  # インデックスを保存
                     ),
-                    border=ft.border.all(1, ft.colors.BLACK12),
+                    border=ft.border.all(1, ft.Colors.BLACK12),
                     border_radius=5
                 )
             )
@@ -315,11 +314,11 @@ def TemplateView(page):
                     content=ft.ListTile(
                         title=ft.Text(basename),
                         subtitle=ft.Text(f"位置: {position}, サイズ: {size}", size=10),
-                        leading=ft.Icon(ft.icons.IMAGE),
+                        leading=ft.Icon(ft.Icons.IMAGE),
                         selected=False,
                         data=i  # インデックスを保存
                     ),
-                    border=ft.border.all(1, ft.colors.BLACK12),
+                    border=ft.border.all(1, ft.Colors.BLACK12),
                     border_radius=5
                 )
             )
@@ -355,14 +354,14 @@ def TemplateView(page):
             
             success = template_manager.create_template(template, name_field.value)
             if success:
-                page.show_snack_bar(
-                    ft.SnackBar(ft.Text("新規テンプレートを作成しました"), open=True)
-                )
+                page.snack_bar = ft.SnackBar(ft.Text("新規テンプレートを作成しました"))
+                page.snack_bar.open = True
+                page.update()
                 load_template_list()
             else:
-                page.show_snack_bar(
-                    ft.SnackBar(ft.Text("テンプレート作成に失敗しました"), open=True)
-                )
+                page.snack_bar = ft.SnackBar(ft.Text("テンプレート作成に失敗しました"))
+                page.snack_bar.open = True
+                page.update()
             
             dlg.open = False
             page.update()
@@ -385,9 +384,9 @@ def TemplateView(page):
     def delete_template():
         """選択されたテンプレートを削除"""
         if not current_template:
-            page.show_snack_bar(
-                ft.SnackBar(ft.Text("テンプレートを選択してください"), open=True)
-            )
+            page.snack_bar = ft.SnackBar(ft.Text("テンプレートを選択してください"))
+            page.snack_bar.open = True
+            page.update()
             return
         
         # ここでエラーが起きていた部分を修正
@@ -398,16 +397,14 @@ def TemplateView(page):
             nonlocal current_template, current_template_path
             success = template_manager.delete_template(template_path)
             if success:
-                page.show_snack_bar(
-                    ft.SnackBar(ft.Text("テンプレートを削除しました"), open=True)
-                )
+                page.snack_bar = ft.SnackBar(ft.Text("テンプレートを削除しました"))
+                page.snack_bar.open = True
                 current_template = None
                 current_template_path = None
                 load_template_list()
             else:
-                page.show_snack_bar(
-                    ft.SnackBar(ft.Text("テンプレート削除に失敗しました"), open=True)
-                )
+                page.snack_bar = ft.SnackBar(ft.Text("テンプレート削除に失敗しました"))
+                page.snack_bar.open = True
             
             dlg.open = False
             page.update()
@@ -429,9 +426,9 @@ def TemplateView(page):
     def save_template():
         """現在のテンプレートを保存"""
         if not current_template:
-            page.show_snack_bar(
-                ft.SnackBar(ft.Text("テンプレートが選択されていません"), open=True)
-            )
+            page.snack_bar = ft.SnackBar(ft.Text("テンプレートが選択されていません"))
+            page.snack_bar.open = True
+            page.update()
             return
         
         # テンプレート情報を更新
@@ -446,21 +443,19 @@ def TemplateView(page):
         success = template_manager.update_template(current_template, current_template_path)
         
         if success:
-            page.show_snack_bar(
-                ft.SnackBar(ft.Text("テンプレートを保存しました"), open=True)
-            )
+            page.snack_bar = ft.SnackBar(ft.Text("テンプレートを保存しました"))
+            page.snack_bar.open = True
             load_template_list()
         else:
-            page.show_snack_bar(
-                ft.SnackBar(ft.Text("テンプレート保存に失敗しました"), open=True)
-            )
+            page.snack_bar = ft.SnackBar(ft.Text("テンプレート保存に失敗しました"))
+            page.snack_bar.open = True
     
     def add_text_element():
         """テキスト要素を追加"""
         if not current_template:
-            page.show_snack_bar(
-                ft.SnackBar(ft.Text("テンプレートを選択してください"), open=True)
-            )
+            page.snack_bar = ft.SnackBar(ft.Text("テンプレートを選択してください"))
+            page.snack_bar.open = True
+            page.update()
             return
         
         def save_text_element(e):
@@ -519,23 +514,23 @@ def TemplateView(page):
     def edit_text_element():
         """テキスト要素を編集"""
         # 実装省略（時間の都合上）
-        page.show_snack_bar(
-            ft.SnackBar(ft.Text("この機能はまだ実装されていません"), open=True)
-        )
+        page.snack_bar = ft.SnackBar(ft.Text("この機能はまだ実装されていません"))
+        page.snack_bar.open = True
+        page.update()
     
     def remove_text_element():
         """テキスト要素を削除"""
         # 実装省略（時間の都合上）
-        page.show_snack_bar(
-            ft.SnackBar(ft.Text("この機能はまだ実装されていません"), open=True)
-        )
+        page.snack_bar = ft.SnackBar(ft.Text("この機能はまだ実装されていません"))
+        page.snack_bar.open = True
+        page.update()
     
     def add_image_element():
         """装飾要素を追加"""
         if not current_template:
-            page.show_snack_bar(
-                ft.SnackBar(ft.Text("テンプレートを選択してください"), open=True)
-            )
+            page.snack_bar = ft.SnackBar(ft.Text("テンプレートを選択してください"))
+            page.snack_bar.open = True
+            page.update()
             return
             
         def pick_file_result(e: ft.FilePickerResultEvent):
@@ -566,28 +561,28 @@ def TemplateView(page):
     def edit_image_element():
         """装飾要素を編集"""
         # 実装省略（時間の都合上）
-        page.show_snack_bar(
-            ft.SnackBar(ft.Text("この機能はまだ実装されていません"), open=True)
-        )
+        page.snack_bar = ft.SnackBar(ft.Text("この機能はまだ実装されていません"))
+        page.snack_bar.open = True
+        page.update()
     
     def remove_image_element():
         """装飾要素を削除"""
         # 実装省略（時間の都合上）
-        page.show_snack_bar(
-            ft.SnackBar(ft.Text("この機能はまだ実装されていません"), open=True)
-        )
+        page.snack_bar = ft.SnackBar(ft.Text("この機能はまだ実装されていません"))
+        page.snack_bar.open = True
+        page.update()
     
     # ボタンバー
     button_bar = ft.Row(
         [
             ft.ElevatedButton(
                 "新規テンプレート",
-                icon=ft.icons.ADD,
+                icon=ft.Icons.ADD,
                 on_click=lambda _: create_new_template()
             ),
             ft.ElevatedButton(
                 "テンプレート削除",
-                icon=ft.icons.DELETE,
+                icon=ft.Icons.DELETE,
                 on_click=lambda _: delete_template()
             ),
             loading

@@ -1,0 +1,23 @@
+{
+    "name": "デフォルトテンプレート",
+    "background": "",
+    "product_position": [250, 150],
+    "product_size": [300, 300],
+    "text_elements": [
+        {
+            "text": "${name}",
+            "position": [250, 480],
+            "font": "arial.ttf",
+            "font_size": 24,
+            "color": [0, 0, 0]
+        },
+        {
+            "text": "¥${price}",
+            "position": [250, 520],
+            "font": "arial.ttf",
+            "font_size": 32,
+            "color": [255, 0, 0]
+        }
+    ],
+    "image_elements": []
+}

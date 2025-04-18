@@ -58,7 +58,7 @@ def BatchView(page):
     # 処理ボタン
     process_button = ft.ElevatedButton(
         "処理開始",
-        icon=ft.icons.PLAY_ARROW,
+        icon=ft.Icons.PLAY_ARROW,
         on_click=lambda _: start_process()
     )
     
@@ -134,11 +134,11 @@ def BatchView(page):
                 content=ft.ListTile(
                     title=ft.Text(template_info["name"]),
                     subtitle=ft.Text(os.path.basename(template_info["path"]), size=10),
-                    leading=ft.Icon(ft.icons.DESCRIPTION),
+                    leading=ft.Icon(ft.Icons.DESCRIPTION),
                     trailing=ft.Radio(value=template_info["path"]),
                     on_click=lambda _, path=template_info["path"]: select_template(path)
                 ),
-                border=ft.border.all(1, ft.colors.BLACK12),
+                border=ft.border.all(1, ft.Colors.BLACK12),
                 border_radius=5,
                 padding=5
             )
@@ -348,7 +348,7 @@ def BatchView(page):
                                     csv_field,
                                     ft.ElevatedButton(
                                         "参照",
-                                        icon=ft.icons.FOLDER_OPEN,
+                                        icon=ft.Icons.FOLDER_OPEN,
                                         on_click=pick_csv_file
                                     )
                                 ],
@@ -361,7 +361,7 @@ def BatchView(page):
                                     image_folder_field,
                                     ft.ElevatedButton(
                                         "参照",
-                                        icon=ft.icons.FOLDER_OPEN,
+                                        icon=ft.Icons.FOLDER_OPEN,
                                         on_click=pick_image_folder
                                     )
                                 ],
@@ -374,7 +374,7 @@ def BatchView(page):
                                     output_folder_field,
                                     ft.ElevatedButton(
                                         "参照",
-                                        icon=ft.icons.FOLDER_OPEN,
+                                        icon=ft.Icons.FOLDER_OPEN,
                                         on_click=pick_output_folder
                                     )
                                 ],

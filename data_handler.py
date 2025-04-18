@@ -19,7 +19,11 @@ class DataHandler:
         """テンプレートJSONファイルをロード"""
         try:
             with open(template_path, 'r', encoding='utf-8') as f:
-                template = json.load(f)
+                content = f.read().strip()
+                if not content:
+                    print(f"テンプレートファイルが空です: {template_path}")
+                    return self.create_default_template()
+                template = json.loads(content)
             return template
         except Exception as e:
             print(f"テンプレートロードエラー: {e}")
@@ -40,22 +44,22 @@ class DataHandler:
         return {
             "name": "デフォルトテンプレート",
             "background": "",
-            "product_position": (250, 150),
-            "product_size": (300, 300),
+            "product_position": [250, 150],
+            "product_size": [300, 300],
             "text_elements": [
                 {
                     "text": "${name}",
-                    "position": (250, 480),
+                    "position": [250, 480],
                     "font": "arial.ttf",
                     "font_size": 24,
-                    "color": (0, 0, 0)
+                    "color": [0, 0, 0]
                 },
                 {
                     "text": "¥${price}",
-                    "position": (250, 520),
+                    "position": [250, 520],
                     "font": "arial.ttf",
                     "font_size": 32,
-                    "color": (255, 0, 0)
+                    "color": [255, 0, 0]
                 }
             ],
             "image_elements": []
