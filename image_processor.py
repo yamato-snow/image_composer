@@ -55,6 +55,10 @@ class ImageProcessor:
             font_size = text_element.get('font_size', 24)
             color = text_element.get('color', (0, 0, 0))
             
+            # 色情報がリスト形式の場合はタプルに変換
+            if isinstance(color, list):
+                color = tuple(color)
+            
             font = self.get_font(font_name, font_size)
             draw.text(position, text, font=font, fill=color)
         
@@ -78,6 +82,27 @@ class ImageProcessor:
     def batch_process(self, csv_data, image_folder, template, output_folder, progress_callback=None):
         """CSVデータを使って一括処理"""
         os.makedirs(output_folder, exist_ok=True)
+        
+        # テンプレートの座標・サイズデータがリスト形式の場合はタプルに変換
+        if isinstance(template.get('product_position'), list):
+            template['product_position'] = tuple(template['product_position'])
+        
+        if isinstance(template.get('product_size'), list):
+            template['product_size'] = tuple(template['product_size'])
+        
+        # テキスト要素の色情報とポジションをタプルに変換
+        for text_elem in template.get('text_elements', []):
+            if isinstance(text_elem.get('color'), list):
+                text_elem['color'] = tuple(text_elem['color'])
+            if isinstance(text_elem.get('position'), list):
+                text_elem['position'] = tuple(text_elem['position'])
+        
+        # 装飾画像要素のポジションとサイズをタプルに変換
+        for image_elem in template.get('image_elements', []):
+            if isinstance(image_elem.get('position'), list):
+                image_elem['position'] = tuple(image_elem['position'])
+            if isinstance(image_elem.get('size'), list):
+                image_elem['size'] = tuple(image_elem['size'])
         
         total = len(csv_data)
         processed = 0

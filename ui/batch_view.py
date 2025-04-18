@@ -2,6 +2,8 @@ import flet as ft
 import os
 import threading
 import time
+import subprocess
+import sys
 from template_manager import TemplateManager
 from data_handler import DataHandler
 from image_processor import ImageProcessor
@@ -58,6 +60,16 @@ def BatchView(page):
         "処理開始",
         icon=ft.icons.PLAY_ARROW,
         on_click=lambda _: start_process()
+    )
+    
+    # 処理ログ表示
+    log_text = ft.TextField(
+        label="処理ログ",
+        multiline=True,
+        read_only=True,
+        min_lines=5,
+        max_lines=5,
+        expand=True
     )
     
     # ファイル選択ハンドラ関数
@@ -186,74 +198,127 @@ def BatchView(page):
             page.update()
             return
         
-        # 選択されたテンプレートを取得
-        template = template_manager.data_handler.load_template(selected_template_path)
-        
-        # CSVデータを読み込み
-        csv_data = data_handler.load_csv(csv_path)
-        if csv_data is None:
-            page.snack_bar = ft.SnackBar(ft.Text("CSVファイルの読み込みに失敗しました"))
-            page.snack_bar.open = True
-            page.update()
-            return
-        
         # UI更新
         processing = True
         progress_bar.value = 0
         progress_text.value = "処理準備中..."
         process_button.disabled = True
+        log_text.value = ""
         page.update()
         
         # バックグラウンドで処理実行
         threading.Thread(
             target=process_in_background,
-            args=(csv_data, template),
+            args=(csv_path, image_folder, output_folder, selected_template_path),
             daemon=True
         ).start()
     
-    # 進捗更新コールバック
-    def update_progress_callback(current, total):
-        nonlocal progress_bar, progress_text
-        progress_value = current / total
-        
-        # UIスレッドで実行するために非同期更新
-        progress_bar.value = progress_value
-        progress_text.value = f"処理中... {current}/{total}"
-        page.update()
-    
     # バックグラウンド処理
-    def process_in_background(csv_data, template):
+    def process_in_background(csv_path, image_folder, output_folder, template_path):
         """バックグラウンドで処理実行"""
         nonlocal processing
         
         try:
-            # 処理開始
-            time.sleep(0.5)  # UIの更新を待つ
+            # UIの更新を待つ
+            time.sleep(0.5)
             
-            # 画像処理実行
-            processed, errors = image_processor.batch_process(
-                csv_data, 
-                image_folder, 
-                template, 
-                output_folder, 
-                progress_callback=update_progress_callback
+            # スクリプトのパスを取得
+            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            batch_runner = os.path.join(script_dir, "batch_runner.py")
+            
+            # コマンドを構築
+            cmd = [
+                sys.executable,
+                batch_runner,
+                csv_path,
+                image_folder,
+                output_folder,
+                template_path
+            ]
+            
+            # 進捗表示を更新
+            progress_text.value = "バッチ処理を開始します..."
+            log_text.value += "バッチ処理を開始します...\n"
+            page.update()
+            
+            # サブプロセスとして実行
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding='utf-8',
+                bufsize=1,
+                universal_newlines=True
             )
             
-            # 処理完了後のUI更新
-            progress_bar.value = 1.0
-            progress_text.value = f"完了: {processed}件処理 ({errors}件エラー)"
-            process_button.disabled = False
+            # 標準出力をリアルタイムで読み取り
+            total_lines = 0
+            processed_items = 0
+            total_items = 0
             
-            # 完了メッセージ
-            page.snack_bar = ft.SnackBar(ft.Text(f"画像処理が完了しました (処理: {processed}件, エラー: {errors}件)"))
-            page.snack_bar.open = True
+            # 標準出力の読み取り
+            for line in process.stdout:
+                log_text.value += line
+                
+                # 進捗情報を解析
+                if "処理中..." in line and "/" in line:
+                    try:
+                        parts = line.split("処理中... ")[1].split("/")
+                        current = int(parts[0].strip())
+                        total = int(parts[1].split(" ")[0].strip())
+                        processed_items = current
+                        total_items = total
+                        progress_bar.value = current / total
+                        progress_text.value = f"処理中... {current}/{total}"
+                    except:
+                        pass
+                
+                # 処理完了情報
+                if "バッチ処理完了" in line:
+                    progress_bar.value = 1.0
+                    progress_text.value = "処理完了"
+                
+                # 5行以上ある場合は古い行を削除
+                total_lines += 1
+                lines = log_text.value.split("\n")
+                if len(lines) > 20:
+                    log_text.value = "\n".join(lines[-20:])
+                
+                page.update()
+            
+            # エラー出力の読み取り
+            error_output = process.stderr.read()
+            if error_output:
+                log_text.value += f"\nエラー出力:\n{error_output}"
+                progress_text.value = "エラーが発生しました"
+                page.update()
+            
+            # 処理完了
+            process.wait()
+            
+            if process.returncode == 0:
+                progress_bar.value = 1.0
+                if processed_items > 0:
+                    progress_text.value = f"完了: {processed_items}件処理"
+                else:
+                    progress_text.value = "処理完了"
+                
+                # 完了メッセージ
+                page.snack_bar = ft.SnackBar(ft.Text("画像処理が完了しました"))
+                page.snack_bar.open = True
+            else:
+                progress_text.value = f"エラーが発生しました (終了コード: {process.returncode})"
+                page.snack_bar = ft.SnackBar(ft.Text("処理中にエラーが発生しました"))
+                page.snack_bar.open = True
+                
             page.update()
             
         except Exception as e:
             # エラー発生時のUI更新
             progress_bar.value = 0
             progress_text.value = f"エラー発生: {str(e)}"
-            process_button.disabled = False
+            log_text.value += f"\nエラー発生: {str(e)}"
             page.update()
             
             # エラーメッセージ表示
@@ -263,6 +328,8 @@ def BatchView(page):
         
         finally:
             processing = False
+            process_button.disabled = False
+            page.update()
     
     # メインレイアウト
     main_layout = ft.Column(
@@ -331,7 +398,7 @@ def BatchView(page):
                         ]
                     ),
                     padding=20,
-                    height=300
+                    height=200
                 )
             ),
             
@@ -344,6 +411,7 @@ def BatchView(page):
                             ft.Divider(),
                             progress_bar,
                             progress_text,
+                            log_text,
                             ft.Container(
                                 content=process_button,
                                 alignment=ft.alignment.center,
